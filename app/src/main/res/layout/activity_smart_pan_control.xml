@@ -17,6 +17,7 @@
         <SeekBar
             android:id="@+id/sbTemperature"
             android:layout_width="match_parent"
+            android:max="100"
             android:layout_height="32dp"/>
 
         <LinearLayout
@@ -33,11 +34,47 @@
         </LinearLayout>
 
         <TextView
+            android:id="@+id/settedTemperature"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="WORK MODE"
+            android:text="Setted tempreture"
             android:textSize="32sp"
             android:textAlignment="center"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="WORK MODES:"
+            android:textSize="32sp"
+            android:textAlignment="center"/>
+
+            <RadioGroup
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="8dp"
+                android:layout_gravity="center_horizontal">
+
+                <RadioButton
+                    android:layout_width="wrap_content"
+                    android:layout_height="48dp"
+                    android:text="NOT SET"
+                    android:layout_gravity="left"/>
+
+                <RadioButton
+                    android:id="@+id/cbMaintenance"
+                    android:layout_width="wrap_content"
+                    android:layout_height="48dp"
+                    android:text="TEMPERATURE MAINTENANCE"
+                    android:layout_gravity="center"/>
+
+                <RadioButton
+                    android:id="@+id/cbMilk"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:text="MILK"
+                    android:layout_gravity="right"/>
+            </RadioGroup>
     </LinearLayout>
 
     <TextView

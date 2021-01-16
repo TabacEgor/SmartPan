@@ -3,12 +3,11 @@ package com.example.smartpan
 import android.annotation.SuppressLint
 import android.os.Bundle
 import android.util.Log
+import android.widget.SeekBar
 import androidx.appcompat.app.AppCompatActivity
 import com.example.smartpan.databinding.ActivitySmartPanControlBinding
-import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken
-import org.eclipse.paho.client.mqttv3.MqttCallbackExtended
-import org.eclipse.paho.client.mqttv3.MqttClient
-import org.eclipse.paho.client.mqttv3.MqttMessage
+import kotlinx.android.synthetic.main.activity_smart_pan_control.*
+import org.eclipse.paho.client.mqttv3.*
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence
 import org.json.JSONObject
 
@@ -30,6 +29,19 @@ class SmartPanControlActivity : AppCompatActivity(), MqttCallbackExtended {
         }.onFailure {
             Log.d(TAG, it.message.toString())
         }
+
+        binding.btnSetTempreture.setOnClickListener {
+            publishMessage(binding.sbTemperature.progress.toFloat(), 2)
+        }
+        binding.sbTemperature.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            @SuppressLint("SetTextI18n")
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, p2: Boolean) {
+                val `val` = progress * (seekBar!!.width - 2 * seekBar.thumbOffset) / seekBar.max
+                settedTemperature.text = "Setted temp: $progress"
+            }
+            override fun onStartTrackingTouch(p0: SeekBar?) {}
+            override fun onStopTrackingTouch(p0: SeekBar?) {}
+        })
     }
 
     override fun connectionLost(cause: Throwable?) {
@@ -59,8 +71,23 @@ class SmartPanControlActivity : AppCompatActivity(), MqttCallbackExtended {
             jsonObject.getString("current_temperature").toFloat(),
             jsonObject.getString("set_temperature").toFloat(),
             jsonObject.getString("current_pwm").toInt(),
-            WorkMode.NO_SET)
+            WorkMode.NO_SET
+        )
         binding.tvCurrentTempreture.text = "${data.current_temperature} °"
+    }
+
+    private fun publishMessage(setTemperature: Float, workMode: Int) {
+        try {
+            val message = MqttMessage()
+            val jsonMessage = JSONObject()
+            jsonMessage.put("set_temperature", setTemperature)
+            jsonMessage.put("work_mode", workMode)
+            message.payload = jsonMessage.toString().toByteArray()
+            message.qos = 0
+            mqttClient.publish(SUB_TOPIC, message)
+        } catch (e: MqttException) {
+            Log.e(TAG, e.toString())
+        }
     }
 
     companion object {
