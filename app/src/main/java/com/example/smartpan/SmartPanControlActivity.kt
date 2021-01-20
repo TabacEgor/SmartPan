@@ -1,8 +1,11 @@
 package com.example.smartpan
 
+import android.R
 import android.annotation.SuppressLint
 import android.os.Bundle
 import android.util.Log
+import android.widget.RadioButton
+import android.widget.RadioGroup
 import android.widget.SeekBar
 import androidx.appcompat.app.AppCompatActivity
 import com.example.smartpan.databinding.ActivitySmartPanControlBinding
@@ -16,6 +19,7 @@ class SmartPanControlActivity : AppCompatActivity(), MqttCallbackExtended {
 
     private lateinit var binding: ActivitySmartPanControlBinding
     private lateinit var mqttClient: MqttClient
+    private var currentMode = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -31,7 +35,8 @@ class SmartPanControlActivity : AppCompatActivity(), MqttCallbackExtended {
         }
 
         binding.btnSetTempreture.setOnClickListener {
-            publishMessage(binding.sbTemperature.progress.toFloat(), 2)
+            publishMessage(binding.sbTemperature.progress.toFloat(), currentMode)
+            Log.d(TAG, "${binding.rbGroup.checkedRadioButtonId}")
         }
         binding.sbTemperature.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             @SuppressLint("SetTextI18n")
@@ -39,8 +44,24 @@ class SmartPanControlActivity : AppCompatActivity(), MqttCallbackExtended {
                 val `val` = progress * (seekBar!!.width - 2 * seekBar.thumbOffset) / seekBar.max
                 settedTemperature.text = "Setted temp: $progress"
             }
+
             override fun onStartTrackingTouch(p0: SeekBar?) {}
             override fun onStopTrackingTouch(p0: SeekBar?) {}
+        })
+
+        rbGroup.setOnCheckedChangeListener(RadioGroup.OnCheckedChangeListener { group, checkedId ->
+            val radio = findViewById<RadioButton>(checkedId)
+            when (radio) {
+                binding.cbNoSet -> {
+                    currentMode = 0
+                }
+                binding.cbMaintenance -> {
+                    currentMode = 1
+                }
+                binding.cbMilk -> {
+                    currentMode = 2
+                }
+            }
         })
     }
 

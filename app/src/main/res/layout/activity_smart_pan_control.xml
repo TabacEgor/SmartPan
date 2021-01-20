@@ -49,6 +49,7 @@
             android:textAlignment="center"/>
 
             <RadioGroup
+                android:id="@+id/rbGroup"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
@@ -56,6 +57,7 @@
                 android:layout_gravity="center_horizontal">
 
                 <RadioButton
+                    android:id="@+id/cbNoSet"
                     android:layout_width="wrap_content"
                     android:layout_height="48dp"
                     android:text="NOT SET"
