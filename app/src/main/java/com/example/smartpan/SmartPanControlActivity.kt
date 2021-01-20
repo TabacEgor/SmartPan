@@ -1,8 +1,11 @@
 package com.example.smartpan
 
-import android.R
 import android.annotation.SuppressLint
+import android.media.MediaPlayer
+import android.media.RingtoneManager
+import android.net.Uri
 import android.os.Bundle
+import android.provider.Settings
 import android.util.Log
 import android.widget.RadioButton
 import android.widget.RadioGroup
@@ -20,11 +23,14 @@ class SmartPanControlActivity : AppCompatActivity(), MqttCallbackExtended {
     private lateinit var binding: ActivitySmartPanControlBinding
     private lateinit var mqttClient: MqttClient
     private var currentMode = 0
+    private lateinit var player: MediaPlayer
+    private var enableReminder = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivitySmartPanControlBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        player = MediaPlayer.create(applicationContext, Settings.System.DEFAULT_RINGTONE_URI)
         runCatching {
             mqttClient = MqttClient(MQTT_URL, "AndroidThingSub", MemoryPersistence())
             mqttClient.setCallback(this)
@@ -33,8 +39,18 @@ class SmartPanControlActivity : AppCompatActivity(), MqttCallbackExtended {
         }.onFailure {
             Log.d(TAG, it.message.toString())
         }
+        binding.btnStopSound.setOnClickListener {
+            player.stop()
+            enableReminder = false
+        }
 
         binding.btnSetTempreture.setOnClickListener {
+//            val notification: Uri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
+//            val r = RingtoneManager.getRingtone(applicationContext, notification)
+//            r.play()
+//            val player = MediaPlayer.create(this, Settings.System.DEFAULT_RINGTONE_URI)
+//            player.start()
+            enableReminder = true
             publishMessage(binding.sbTemperature.progress.toFloat(), currentMode)
             Log.d(TAG, "${binding.rbGroup.checkedRadioButtonId}")
         }
@@ -88,12 +104,16 @@ class SmartPanControlActivity : AppCompatActivity(), MqttCallbackExtended {
 
     private fun getSmartPanData(jsonString: String) {
         val jsonObject = JSONObject(jsonString)
+        val tempreture = jsonObject.getString("current_temperature").toFloat()
         val data = SmartPanData(
             jsonObject.getString("current_temperature").toFloat(),
             jsonObject.getString("set_temperature").toFloat(),
             jsonObject.getString("current_pwm").toInt(),
             WorkMode.NO_SET
         )
+        if (tempreture >= binding.sbTemperature.progress.toFloat() && enableReminder) {
+            player.start()
+        }
         binding.tvCurrentTempreture.text = "${data.current_temperature} °"
     }
 
